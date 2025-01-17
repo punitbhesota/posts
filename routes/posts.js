@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import { getPosts, post } from '../controllers/postsController.js';
+import { addPost, getPosts } from '../controllers/postsController.js';
+import { addPostValidator } from '../validators/postValidator.js';
 
 const router = Router();
 
-router.post('/',post);
+router.post('/',addPostValidator,addPost);
 router.get('/',getPosts);
 
 export default router;
