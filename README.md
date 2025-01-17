@@ -23,6 +23,9 @@ posts/
         posts.js
 ```
 
+## Postman Collection
+Link : https://documenter.getpostman.com/view/13766660/2sAYQajqYo
+
 ## Configuration Files
 posts/config/config.js: Loads environment variables and exports configuration settings.
 

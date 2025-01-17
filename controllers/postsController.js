@@ -28,14 +28,16 @@ export const getPosts = async (req, res) => {
         const { sort, page = 1, limit = 10, keyword, tag } = req.query;
 
         const offset = (page - 1) * limit;
-        const query = {};
+        let conditions = [];
 
         // Filter by keyword
         if (keyword) {
-            query.$or = [
-                { title: { $regex: keyword, $options: 'i' } },
-                { description: { $regex: keyword, $options: 'i' } }
-            ];
+            conditions.push({
+                $or: [
+                    { title: { $regex: keyword, $options: 'i' } },
+                    { description: { $regex: keyword, $options: 'i' } }
+                ]
+            });
         }
 
         // Filter by tag
@@ -46,15 +48,27 @@ export const getPosts = async (req, res) => {
             }
             const postHashtags = await PostTag.find({ tagId: hashtag.id });
             const postIds = postHashtags.map(ph => ph.postId);
-            query._id = { $in: postIds };
+            conditions.push({ _id: { $in: postIds } });
         }
+
+        const query = conditions.length > 0 ? { $or: conditions } : {};
 
         const posts = await Post.find(query)
             .sort(sort ? { [sort]: 1 } : {})
             .skip(offset)
             .limit(parseInt(limit));
 
-        res.json({ message: 'Posts retrieved successfully', posts });
+        const total = await Post.countDocuments(query);
+
+        res.json({ 
+            message: 'Posts retrieved successfully', 
+            posts,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total
+            }
+        });
     } catch (error) {
         res.status(500).json({ message: 'Error retrieving posts', error: error.message });
     }
